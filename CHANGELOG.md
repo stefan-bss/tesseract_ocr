@@ -1,3 +1,6 @@
+## 0.4.33
+- bugfixes
+
 ## 0.4.31
 - iOS improvement, safer, works with sandbox rules and ensures Tesseract can find its data
 
