@@ -10,7 +10,9 @@ public class SwiftFlutterTesseractOcrPlugin: NSObject, FlutterPlugin {
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+      DispatchQueue.global(qos: .userInitiated).async {
         initializeTessData()
+        }
         if call.method == "extractText" {
             
             guard let args = call.arguments else {
@@ -35,18 +37,46 @@ public class SwiftFlutterTesseractOcrPlugin: NSObject, FlutterPlugin {
         }
     }
     
-    func initializeTessData() {
-        
-        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let destURL = documentsURL!.appendingPathComponent("tessdata")
-        
-        let sourceURL = Bundle.main.bundleURL.appendingPathComponent("tessdata")
-        
-        let fileManager = FileManager.default
-        do {
-            try fileManager.createSymbolicLink(at: sourceURL, withDestinationURL: destURL)
-        } catch {
-            print(error)
-        }
+ func initializeTessData() {
+    let fileManager = FileManager.default
+
+    // Resolve Documents directory
+    guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+        print("❌ Could not locate Documents directory")
+        return
     }
+
+    let destURL = documentsURL.appendingPathComponent("tessdata")
+
+    // Resolve bundled tessdata
+    guard let sourceURL = Bundle.main.resourceURL?.appendingPathComponent("tessdata") else {
+        print("❌ Could not locate tessdata in bundle")
+        return
+    }
+
+    let hasCopiedKey = "didCopyTessdata"
+
+    // Copy only once (first launch)
+    if !UserDefaults.standard.bool(forKey: hasCopiedKey) {
+        do {
+            // Extra safety: remove any partial/failed copy
+            if fileManager.fileExists(atPath: destURL.path) {
+                try fileManager.removeItem(at: destURL)
+            }
+
+            try fileManager.copyItem(at: sourceURL, to: destURL)
+
+            UserDefaults.standard.set(true, forKey: hasCopiedKey)
+            print("✅ tessdata copied (first launch)")
+        } catch {
+            print("❌ Copy failed:", error)
+            return
+        }
+    } else {
+        print("ℹ️ tessdata already prepared")
+    }
+
+    // Always set environment variable (must happen every launch)
+    setenv("TESSDATA_PREFIX", destURL.path, 1)
+}
 }
