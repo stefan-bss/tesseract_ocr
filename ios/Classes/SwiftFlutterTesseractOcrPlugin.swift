@@ -11,7 +11,7 @@ public class SwiftFlutterTesseractOcrPlugin: NSObject, FlutterPlugin {
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
       DispatchQueue.global(qos: .userInitiated).async {
-        initializeTessData()
+        self.initializeTessData()
         }
         if call.method == "extractText" {
             
