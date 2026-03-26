@@ -10,8 +10,7 @@ public class SwiftFlutterTesseractOcrPlugin: NSObject, FlutterPlugin {
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    
-          initializeTessData()
+         self?.initializeTessData()
             
     
         if call.method == "extractText" {
@@ -30,8 +29,7 @@ public class SwiftFlutterTesseractOcrPlugin: NSObject, FlutterPlugin {
             let  imagePath = params["imagePath"] as! String
             guard let image = UIImage(contentsOfFile: imagePath)else { return }
             
-            swiftyTesseract.performOCR(on: image) { recognizedString in
-                
+           swiftyTesseract.performOCR(on: image) { [weak self] recognizedString in
                 guard let extractText = recognizedString else { return }
                 result(extractText)
             }
