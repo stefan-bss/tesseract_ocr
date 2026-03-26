@@ -1,3 +1,6 @@
+## 0.4.31
+- iOS improvement, safer, works with sandbox rules and ensures Tesseract can find its data
+
 ## 0.4.30
 - 16KB Page Size Compatibility Warning on Google Play Console (due to native libraries) 
 
